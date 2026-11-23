@@ -1,0 +1,260 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Gold Desk · XAUUSD Dashboard</title>
+<style>
+:root{
+  --bg1:#f4f5f7; --bg2:#e4e6ea; --ink:#1d1f23; --mute:#6b7078; --line:rgba(120,125,135,.22);
+  --glass:rgba(255,255,255,.55); --glass-strong:rgba(255,255,255,.75);
+  --up:#2f8f5b; --down:#c0453d; --accent:#3b3f46;
+  --shadow:0 8px 30px rgba(40,44,52,.10), inset 0 1px 0 rgba(255,255,255,.8);
+}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{
+  font:14px/1.45 Inter,system-ui,-apple-system,"Segoe UI",Roboto,sans-serif; color:var(--ink);
+  background:linear-gradient(135deg,var(--bg1),var(--bg2)) fixed; min-height:100vh;
+}
+body::before,body::after{content:"";position:fixed;z-index:-1;border-radius:50%;filter:blur(80px);opacity:.7}
+body::before{width:420px;height:420px;background:#fff;top:-80px;left:-60px}
+body::after{width:520px;height:520px;background:#c9ccd3;bottom:-160px;right:-120px;opacity:.55}
+.wrap{max-width:1500px;margin:0 auto;padding:16px}
+header{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:14px}
+.logo{font-weight:700;letter-spacing:.2px;font-size:18px;display:flex;align-items:center;gap:10px}
+.logo i{width:30px;height:30px;border-radius:9px;background:linear-gradient(145deg,#fff,#cfd2d8);box-shadow:var(--shadow);display:grid;place-items:center;font-style:normal;font-size:13px}
+.spacer{flex:1}
+.glass{background:var(--glass);backdrop-filter:blur(18px) saturate(140%);-webkit-backdrop-filter:blur(18px) saturate(140%);
+  border:1px solid rgba(255,255,255,.7);border-radius:18px;box-shadow:var(--shadow)}
+.pill{padding:6px 12px;border-radius:999px;font-size:12px;font-weight:600;display:inline-flex;align-items:center;gap:7px}
+.dot{width:8px;height:8px;border-radius:50%;background:#9aa0a8}
+.pill.live .dot{background:var(--up);box-shadow:0 0 0 4px rgba(47,143,91,.18)}
+.pill.sample .dot{background:#d19a2a;box-shadow:0 0 0 4px rgba(209,154,42,.18)}
+button,select,input{font:inherit;color:inherit}
+button{cursor:pointer;border:1px solid var(--line);background:var(--glass-strong);padding:8px 14px;border-radius:12px;font-weight:600;transition:.15s}
+button:hover{background:#fff;transform:translateY(-1px)}
+button.dark{background:var(--accent);color:#fff;border-color:transparent}
+button.dark:hover{background:#2a2d33}
+select,input{background:var(--glass-strong);border:1px solid var(--line);border-radius:10px;padding:7px 10px}
+.grid{display:grid;grid-template-columns:minmax(0,1fr) 340px;gap:14px}
+.card{padding:16px}
+.card h3{margin:0 0 10px;font-size:12px;text-transform:uppercase;letter-spacing:.9px;color:var(--mute);font-weight:600}
+.chart-card{padding:8px;display:flex;flex-direction:column}
+.chart-bar{display:flex;gap:8px;align-items:center;padding:6px 8px 10px;flex-wrap:wrap}
+#tv{height:620px;border-radius:12px;overflow:hidden;background:rgba(255,255,255,.6);display:grid;place-items:center;color:var(--mute)}
+.side{display:flex;flex-direction:column;gap:14px}
+.big{font-size:30px;font-weight:700;letter-spacing:-.5px}
+.row{display:flex;justify-content:space-between;padding:7px 0;border-bottom:1px solid var(--line)}
+.row:last-child{border:0}
+.row span:first-child{color:var(--mute)}
+.up{color:var(--up)} .down{color:var(--down)}
+.bottom{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:14px}
+table{width:100%;border-collapse:collapse;font-size:13px}
+th{color:var(--mute);font-weight:600;text-align:left;font-size:11px;text-transform:uppercase;letter-spacing:.7px;padding:6px 6px}
+td{padding:8px 6px;border-top:1px solid var(--line);font-variant-numeric:tabular-nums}
+.tag{padding:2px 8px;border-radius:7px;font-size:11px;font-weight:700;background:rgba(0,0,0,.06)}
+.tag.BUY{color:var(--up)} .tag.SELL{color:var(--down)}
+.empty{color:var(--mute);padding:16px 0;text-align:center}
+.btns{display:flex;gap:8px;margin-top:10px}
+.btns button{flex:1}
+.note{font-size:12px;color:var(--mute);margin-top:10px}
+#spark{width:100%;height:90px;display:block}
+dialog{border:0;border-radius:20px;padding:22px;width:min(480px,92vw);background:rgba(255,255,255,.85);backdrop-filter:blur(24px);box-shadow:0 30px 80px rgba(0,0,0,.25)}
+dialog::backdrop{background:rgba(30,32,38,.35);backdrop-filter:blur(3px)}
+label{display:block;font-size:12px;color:var(--mute);margin:12px 0 4px}
+dialog input{width:100%}
+footer{margin:18px 4px 6px;color:var(--mute);font-size:12px}
+@media(max-width:1100px){.grid{grid-template-columns:1fr}.bottom{grid-template-columns:1fr}#tv{height:480px}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div class="logo"><i>Au</i> Gold Desk <span style="color:var(--mute);font-weight:500">XAUUSD</span></div>
+    <span id="status" class="pill glass sample"><span class="dot"></span><span id="statusTxt">Sample data</span></span>
+    <span id="acctType" class="pill glass" style="display:none"></span>
+    <div class="spacer"></div>
+    <button id="btnSettings">⚙ Settings</button>
+  </header>
+
+  <div class="grid">
+    <section class="glass chart-card">
+      <div class="chart-bar">
+        <select id="feed" title="Chart data feed">
+          <option value="OANDA:XAUUSD">OANDA · XAUUSD</option>
+          <option value="FOREXCOM:XAUUSD">FOREX.com · XAUUSD</option>
+          <option value="FX:XAUUSD">FX · XAUUSD</option>
+          <option value="TVC:GOLD">TVC · GOLD</option>
+        </select>
+        <select id="tf">
+          <option value="1">M1</option><option value="5" selected>M5</option><option value="15">M15</option>
+          <option value="60">H1</option><option value="240">H4</option><option value="D">D1</option>
+        </select>
+        <span style="color:var(--mute);font-size:12px">Left toolbar = drawing tools · top bar = indicators, templates, replay</span>
+      </div>
+      <div id="tv">Loading TradingView chart…</div>
+    </section>
+
+    <aside class="side">
+      <div class="glass card">
+        <h3>Account</h3>
+        <div class="big" id="equity">—</div>
+        <div style="color:var(--mute);margin-bottom:8px">Equity</div>
+        <div class="row"><span>Balance</span><b id="balance">—</b></div>
+        <div class="row"><span>Today P/L</span><b id="today">—</b></div>
+        <div class="row"><span>Margin / Free</span><b id="margin">—</b></div>
+        <div class="row"><span>Bid · Spread</span><b id="bid">—</b></div>
+      </div>
+      <div class="glass card">
+        <h3>Bot</h3>
+        <div class="row"><span>Lot size</span><b id="lot">—</b></div>
+        <div class="row"><span>Trades today</span><b id="trades">—</b></div>
+        <div class="row"><span>Account</span><b id="acct">—</b></div>
+        <div class="row"><span>Last update</span><b id="upd">—</b></div>
+      </div>
+      <div class="glass card">
+        <h3>Deposit &amp; withdraw</h3>
+        <div style="color:var(--mute);font-size:13px">Money moves only through your broker. These buttons open your broker's secure client portal.</div>
+        <div class="btns">
+          <button class="dark" data-go="deposit">Deposit</button>
+          <button data-go="withdraw">Withdraw</button>
+        </div>
+        <div class="note">Set the portal link in Settings. This page never sees or handles your funds or credentials.</div>
+      </div>
+    </aside>
+  </div>
+
+  <div class="bottom">
+    <div class="glass card"><h3>Open positions</h3><div id="pos"></div></div>
+    <div class="glass card"><h3>Closed trades · last 30 days</h3><svg id="spark" viewBox="0 0 400 90" preserveAspectRatio="none"></svg><div id="hist"></div></div>
+  </div>
+
+  <footer>
+    Trading gold with leverage carries a high risk of loss; past results never guarantee future profit. Test on a demo account first. Not financial advice.
+  </footer>
+</div>
+
+<dialog id="dlg">
+  <h3 style="margin:0 0 4px">Settings</h3>
+  <label>Bridge URL (EA data)</label>
+  <input id="bridgeUrl" placeholder="http://127.0.0.1:8787/status.json">
+  <label>Broker deposit link</label>
+  <input id="depUrl" placeholder="https://your-broker.com/client/deposit">
+  <label>Broker withdrawal link</label>
+  <input id="wdUrl" placeholder="https://your-broker.com/client/withdraw">
+  <div class="btns" style="margin-top:18px"><button id="cancel">Cancel</button><button class="dark" id="save">Save</button></div>
+</dialog>
+
+<script src="https://s3.tradingview.com/tv.js"></script>
+<script>
+const $ = id => document.getElementById(id);
+const store = {
+  get(k, d){ try{ return localStorage.getItem(k) ?? d }catch(e){ return d } },
+  set(k, v){ try{ localStorage.setItem(k, v) }catch(e){} }
+};
+const cfg = {
+  bridge: store.get('bridge', 'http://127.0.0.1:8787/status.json'),
+  dep:    store.get('dep', ''),
+  wd:     store.get('wd', '')
+};
+
+/* ---------- chart ---------- */
+function mountChart(){
+  if(!window.TradingView){ $('tv').textContent = 'TradingView could not load (offline or blocked).'; return; }
+  $('tv').innerHTML = '<div id="tvc" style="width:100%;height:100%"></div>';
+  new TradingView.widget({
+    container_id:'tvc', autosize:true, symbol:$('feed').value, interval:$('tf').value,
+    timezone:'Etc/UTC', theme:'light', style:'1', locale:'en', toolbar_bg:'#f4f5f7',
+    enable_publishing:false, allow_symbol_change:true, hide_side_toolbar:false,
+    withdateranges:true, save_image:true, details:false, studies:['RSI@tv-basicstudies','MAExp@tv-basicstudies']
+  });
+}
+$('feed').onchange = $('tf').onchange = mountChart;
+window.addEventListener('load', mountChart);
+
+/* ---------- data ---------- */
+const money = (n, c='') => (n<0?'-':'') + (c? c+' ':'') + Math.abs(n).toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2});
+const cls = n => n>0?'up':n<0?'down':'';
+
+function sample(){
+  const now = Math.floor(Date.now()/1000);
+  const hist = [], pnls=[18.4,-9.2,26.1,12.7,-9.8,31.5,-9.1,22.3];
+  pnls.forEach((p,i)=>hist.push({time:now-86400*(8-i),type:i%2?'SELL':'BUY',volume:.01,price:2650+i*3,profit:p}));
+  return {sample:true, updated:now, symbol:'XAUUSD', currency:'USD', account:0, server:'—', demo:true,
+    balance:1000, equity:1007.4, margin:2.65, freeMargin:1004.7, bid:2658.42, spread:22, todayPnl:7.4,
+    todayTrades:1, lot:.01, positions:[{ticket:1,type:'BUY',volume:.01,open:2651.10,sl:2640.00,tp:2672.00,profit:7.4}],
+    history:hist.reverse()};
+}
+
+async function load(){
+  let d, live = false;
+  try{
+    const r = await fetch(cfg.bridge, {cache:'no-store'});
+    if(!r.ok) throw 0;
+    d = await r.json(); live = true;
+  }catch(e){ d = sample(); }
+  render(d, live);
+}
+
+function render(d, live){
+  const st = $('status'); st.className = 'pill glass ' + (live?'live':'sample');
+  $('statusTxt').textContent = live ? 'Live · connected to EA' : 'Sample data · EA not connected';
+  const at = $('acctType'); at.style.display = live?'inline-flex':'none';
+  at.textContent = d.demo ? 'DEMO account' : 'REAL account';
+  const c = d.currency || 'USD';
+  $('equity').textContent = money(d.equity, c);
+  $('balance').textContent = money(d.balance, c);
+  $('today').textContent = money(d.todayPnl, c); $('today').className = cls(d.todayPnl);
+  $('margin').textContent = money(d.margin)+' / '+money(d.freeMargin);
+  $('bid').textContent = d.bid.toFixed(2)+' · '+d.spread+' pts';
+  $('lot').textContent = d.lot.toFixed(2);
+  $('trades').textContent = d.todayTrades;
+  $('acct').textContent = d.account ? d.account+' · '+d.server : '—';
+  $('upd').textContent = new Date(d.updated*1000).toLocaleTimeString();
+
+  $('pos').innerHTML = d.positions.length ? table(['Type','Lots','Open','SL','TP','P/L'],
+    d.positions.map(p=>[tag(p.type),p.volume.toFixed(2),p.open.toFixed(2),p.sl?p.sl.toFixed(2):'—',p.tp?p.tp.toFixed(2):'—',pl(p.profit)]))
+    : '<div class="empty">No open positions</div>';
+
+  const h = d.history || [];
+  $('hist').innerHTML = h.length ? table(['Time','Type','Lots','Price','P/L'],
+    h.slice(0,8).map(t=>[new Date(t.time*1000).toLocaleDateString(undefined,{month:'short',day:'numeric'}),tag(t.type),t.volume.toFixed(2),t.price.toFixed(2),pl(t.profit)]))
+    : '<div class="empty">No closed trades yet</div>';
+  spark(h.slice().reverse());
+}
+const tag = t => `<span class="tag ${t}">${t}</span>`;
+const pl = n => `<b class="${cls(n)}">${money(n)}</b>`;
+const table = (heads, rows) => '<table><thead><tr>'+heads.map(h=>`<th>${h}</th>`).join('')+'</tr></thead><tbody>'+
+  rows.map(r=>'<tr>'+r.map(c=>`<td>${c}</td>`).join('')+'</tr>').join('')+'</tbody></table>';
+
+function spark(h){
+  const s = $('spark'); if(h.length<2){ s.innerHTML=''; return; }
+  let run = 0; const pts = [0].concat(h.map(t=>run+=t.profit));
+  const mn = Math.min(...pts), mx = Math.max(...pts), rg = (mx-mn)||1;
+  const xy = pts.map((v,i)=>[i/(pts.length-1)*400, 80-((v-mn)/rg)*70]);
+  const line = xy.map((p,i)=>(i?'L':'M')+p[0].toFixed(1)+' '+p[1].toFixed(1)).join(' ');
+  const col = run>=0 ? '#2f8f5b' : '#c0453d';
+  s.innerHTML = `<defs><linearGradient id="g" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="${col}" stop-opacity=".25"/><stop offset="1" stop-color="${col}" stop-opacity="0"/></linearGradient></defs>
+    <path d="${line} L400 90 L0 90 Z" fill="url(#g)"/><path d="${line}" fill="none" stroke="${col}" stroke-width="2" vector-effect="non-scaling-stroke"/>`;
+}
+
+/* ---------- settings / deposit links ---------- */
+const dlg = $('dlg');
+$('btnSettings').onclick = ()=>{ $('bridgeUrl').value=cfg.bridge; $('depUrl').value=cfg.dep; $('wdUrl').value=cfg.wd; dlg.showModal(); };
+$('cancel').onclick = ()=>dlg.close();
+$('save').onclick = ()=>{
+  cfg.bridge=$('bridgeUrl').value.trim(); cfg.dep=$('depUrl').value.trim(); cfg.wd=$('wdUrl').value.trim();
+  store.set('bridge',cfg.bridge); store.set('dep',cfg.dep); store.set('wd',cfg.wd);
+  dlg.close(); load();
+};
+document.querySelectorAll('[data-go]').forEach(b=>b.onclick=()=>{
+  const u = b.dataset.go==='deposit'?cfg.dep:cfg.wd;
+  if(/^https:\/\//i.test(u)) window.open(u,'_blank','noopener,noreferrer');
+  else { alert('Add your broker\'s https:// '+b.dataset.go+' link in Settings first.'); $('btnSettings').click(); }
+});
+
+load(); setInterval(load, 2000);
+</script>
+</body>
+</html>
